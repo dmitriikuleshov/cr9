@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 typedef struct {
-	char key_char[5];
+	char key_char[6]; // 5 + 1 символ для \0
 	int key_int;
 } ComplexKey;
 
