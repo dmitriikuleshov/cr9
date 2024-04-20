@@ -8,11 +8,38 @@ void trim_newline(char *str) {
 }
 
 
+long get_file_size(FILE *file) {
+    long size;
+    fseek(file, 0L, SEEK_END); // Переходим в конец файла
+    size = ftell(file); // Получаем текущую позицию, что равно размеру файла
+    fseek(file, 0L, SEEK_SET); // Возвращаемся в начало файла
+    return size;
+}
+
+int is_file_empty(FILE *file) {
+    int c;
+    while ((c = fgetc(file)) != EOF) {
+        if (c != ' ' && c != '\n' && c != '\t') { // Проверяем символы, не являющиеся пробелами
+            fseek(file, 0L, SEEK_SET); // Возвращаемся в начало файла
+            return 0; // Файл не пустой
+        }
+    }
+    fseek(file, 0L, SEEK_SET); // Возвращаемся в начало файла
+    return 1; // Файл пустой или состоит только из пробелов
+}
+
+
 bool load_table_from_file(const char* filename, Table* table) {
     FILE *file = fopen(filename, "r");
     if (!file) {
         printf("Failed to open file: %s\n", filename);
         return false;
+    }
+
+    if (is_file_empty(file)) {
+        printf("The file is empty\n");
+        fclose(file);
+        exit(EXIT_FAILURE);
     }
 
     char line[256];
@@ -38,6 +65,9 @@ bool load_table_from_file(const char* filename, Table* table) {
             records[count++] = record;
         } else {
             printf("Error reading line: %s\n", line);
+            fclose(file);
+            free(records);
+            exit(EXIT_FAILURE); // завершаем программу в случае ошибки чтения
         }
     }
 
